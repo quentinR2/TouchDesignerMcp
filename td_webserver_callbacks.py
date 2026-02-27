@@ -57,6 +57,11 @@ def onHTTPRequest(webServerDAT, request, response):
         "search_nodes": handle_search_nodes,
         "set_node_position": handle_set_node_position,
         "get_project_info": handle_get_project_info,
+        "create_network": handle_create_network,
+        "export_network": handle_export_network,
+        "save_project": handle_save_project,
+        "get_errors": handle_get_errors,
+        "copy_node": handle_copy_node,
     }
 
     handler = handlers.get(action)
@@ -507,6 +512,289 @@ def handle_get_project_info(params):
             "cookRate": project.cookRate,
             "realTime": project.realTime,
         },
+    }
+
+
+def handle_create_network(params):
+    """Batch create nodes and connections."""
+    parent_path = params.get("parent_path", "/project1")
+    nodes_spec = params.get("nodes", [])
+    connections_spec = params.get("connections", [])
+
+    if not nodes_spec:
+        raise ValueError("nodes list is required and cannot be empty")
+
+    parent = op(parent_path)
+    if parent is None:
+        raise ValueError(f"Parent container not found: {parent_path}")
+
+    created_nodes = []
+    node_map = {}  # name → created node, for wiring connections
+
+    # Phase 1: Create all nodes
+    for i, spec in enumerate(nodes_spec):
+        node_type = spec.get("type")
+        node_name = spec.get("name")
+        if not node_type or not node_name:
+            raise ValueError(f"Node at index {i} requires 'type' and 'name'. Got: {spec}")
+
+        try:
+            new_node = parent.create(node_type, node_name)
+        except Exception as e:
+            return {
+                "success": False,
+                "error": f"Failed to create node '{node_name}' (type={node_type}): {e}",
+                "created_so_far": created_nodes,
+            }
+
+        # Set position if specified
+        if "x" in spec:
+            new_node.nodeX = spec["x"]
+        if "y" in spec:
+            new_node.nodeY = spec["y"]
+
+        # Set parameters if specified
+        node_params = spec.get("params", {})
+        for pname, pvalue in node_params.items():
+            par = getattr(new_node.par, pname, None)
+            if par is not None:
+                par.val = pvalue
+
+        node_map[node_name] = new_node
+        created_nodes.append({
+            "name": new_node.name,
+            "type": new_node.type,
+            "path": new_node.path,
+        })
+
+    # Phase 2: Create connections
+    created_connections = []
+    for conn in connections_spec:
+        src_name = conn.get("source")
+        tgt_name = conn.get("target")
+        out_idx = conn.get("output_index", 0)
+        in_idx = conn.get("input_index", 0)
+
+        if src_name not in node_map:
+            # Try to find as existing node path
+            src_node = op(f"{parent_path}/{src_name}") if not src_name.startswith("/") else op(src_name)
+            if src_node is None:
+                return {
+                    "success": False,
+                    "error": f"Connection source '{src_name}' not found in created nodes or project",
+                    "created_nodes": created_nodes,
+                    "created_connections": created_connections,
+                }
+        else:
+            src_node = node_map[src_name]
+
+        if tgt_name not in node_map:
+            tgt_node = op(f"{parent_path}/{tgt_name}") if not tgt_name.startswith("/") else op(tgt_name)
+            if tgt_node is None:
+                return {
+                    "success": False,
+                    "error": f"Connection target '{tgt_name}' not found in created nodes or project",
+                    "created_nodes": created_nodes,
+                    "created_connections": created_connections,
+                }
+        else:
+            tgt_node = node_map[tgt_name]
+
+        try:
+            tgt_node.inputConnectors[in_idx].connect(src_node.outputConnectors[out_idx])
+            created_connections.append({
+                "source": src_node.path,
+                "target": tgt_node.path,
+                "output_index": out_idx,
+                "input_index": in_idx,
+            })
+        except Exception as e:
+            return {
+                "success": False,
+                "error": f"Failed to connect {src_name} → {tgt_name}: {e}",
+                "created_nodes": created_nodes,
+                "created_connections": created_connections,
+            }
+
+    return {
+        "success": True,
+        "created_nodes": created_nodes,
+        "created_connections": created_connections,
+        "message": f"Created {len(created_nodes)} nodes and {len(created_connections)} connections",
+    }
+
+
+def handle_export_network(params):
+    """Serialize a subnetwork to JSON."""
+    parent_path = params.get("parent_path", "/project1")
+    recursive = params.get("recursive", False)
+
+    parent = op(parent_path)
+    if parent is None:
+        raise ValueError(f"Container not found: {parent_path}")
+
+    nodes = []
+    connections = []
+    seen_paths = set()
+
+    def export_container(container):
+        for child in container.children:
+            if child.path in seen_paths:
+                continue
+            seen_paths.add(child.path)
+
+            # Collect non-default parameters
+            node_params = {}
+            for p in child.pars():
+                try:
+                    val = p.eval()
+                    if str(val) != str(p.default):
+                        node_params[p.name] = str(val)
+                except:
+                    pass
+
+            nodes.append({
+                "name": child.name,
+                "type": child.type,
+                "path": child.path,
+                "family": child.family,
+                "x": child.nodeX,
+                "y": child.nodeY,
+                "params": node_params,
+            })
+
+            # Collect input connections
+            for i, conn in enumerate(child.inputConnectors):
+                for c in conn.connections:
+                    source = c.owner
+                    source_idx = 0
+                    for j, oc in enumerate(source.outputConnectors):
+                        if any(cc.owner == child for cc in oc.connections):
+                            source_idx = j
+                            break
+                    connections.append({
+                        "source": source.name,
+                        "target": child.name,
+                        "output_index": source_idx,
+                        "input_index": i,
+                    })
+
+            if recursive and hasattr(child, 'children'):
+                export_container(child)
+
+    export_container(parent)
+
+    return {
+        "success": True,
+        "parent": parent_path,
+        "nodes": nodes,
+        "connections": connections,
+        "node_count": len(nodes),
+        "connection_count": len(connections),
+    }
+
+
+def handle_save_project(params):
+    """Save the project."""
+    file_path = params.get("file_path", "")
+
+    try:
+        if file_path:
+            project.save(file_path)
+            saved_to = file_path
+        else:
+            project.save()
+            saved_to = project.name
+    except Exception as e:
+        raise ValueError(f"Failed to save project: {e}")
+
+    return {
+        "success": True,
+        "saved_to": saved_to,
+        "message": f"Project saved to {saved_to}",
+    }
+
+
+def handle_get_errors(params):
+    """List all nodes with errors/warnings."""
+    parent_path = params.get("parent_path", "/")
+    recursive = params.get("recursive", True)
+    include_warnings = params.get("include_warnings", True)
+
+    parent = op(parent_path)
+    if parent is None:
+        raise ValueError(f"Container not found: {parent_path}")
+
+    error_nodes = []
+
+    def check_node(container):
+        for child in container.children:
+            errors = child.errors if hasattr(child, 'errors') else ""
+            warnings = child.warnings if hasattr(child, 'warnings') else ""
+
+            has_errors = bool(errors)
+            has_warnings = bool(warnings) and include_warnings
+
+            if has_errors or has_warnings:
+                entry = {
+                    "name": child.name,
+                    "type": child.type,
+                    "path": child.path,
+                }
+                if has_errors:
+                    entry["errors"] = errors
+                if has_warnings:
+                    entry["warnings"] = warnings
+                error_nodes.append(entry)
+
+            if recursive and hasattr(child, 'children'):
+                check_node(child)
+
+    check_node(parent)
+
+    return {
+        "success": True,
+        "parent": parent_path,
+        "count": len(error_nodes),
+        "nodes": error_nodes,
+        "message": f"Found {len(error_nodes)} nodes with issues" if error_nodes else "No errors or warnings found",
+    }
+
+
+def handle_copy_node(params):
+    """Duplicate a node."""
+    node_path = params.get("node_path")
+    destination_path = params.get("destination_path", "")
+    new_name = params.get("new_name", "")
+
+    if not node_path:
+        raise ValueError("node_path is required")
+
+    source = op(node_path)
+    if source is None:
+        raise ValueError(f"Node not found: {node_path}")
+
+    if destination_path:
+        dest = op(destination_path)
+        if dest is None:
+            raise ValueError(f"Destination container not found: {destination_path}")
+    else:
+        dest = source.parent()
+
+    copied = dest.copy(source)
+
+    if new_name:
+        copied.name = new_name
+
+    return {
+        "success": True,
+        "source": node_path,
+        "copy": {
+            "name": copied.name,
+            "type": copied.type,
+            "path": copied.path,
+        },
+        "message": f"Copied {node_path} → {copied.path}",
     }
 
 

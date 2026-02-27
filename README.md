@@ -73,6 +73,21 @@ Open Copilot Chat in VS Code (agent mode) and try these prompts:
 ### Run a script
 > "Execute a script that prints all node types in /project1"
 
+### Build a node chain in one call
+> "Create a network with a noiseTOP, levelTOP, and nullTOP connected in series"
+
+### Export a network
+> "Export the network in /project1 as JSON"
+
+### Check for errors
+> "Are there any errors in the project?"
+
+### Duplicate a node
+> "Copy noise1 and call it noise_backup"
+
+### Save the project
+> "Save the project"
+
 ### Combine operations
 > "Create a constant TOP called bg, then set its color to red (colorr=1, colorg=0, colorb=0)"
 
@@ -94,6 +109,11 @@ Open Copilot Chat in VS Code (agent mode) and try these prompts:
 | `set_node_position` | `node_path`, `x`, `y` | Position a node in the network |
 | `execute_script` | `script`, `parent_path` | Run arbitrary Python inside TD |
 | `get_project_info` | *(none)* | Project metadata (name, FPS, cook rate) |
+| `create_network` | `nodes`, `connections`, `parent_path` | Batch create nodes + connections in one call |
+| `export_network` | `parent_path`, `recursive` | Serialize a subnetwork to JSON |
+| `save_project` | `file_path` (optional) | Save the .toe file |
+| `get_errors` | `parent_path`, `recursive`, `include_warnings` | List nodes with errors/warnings |
+| `copy_node` | `node_path`, `destination_path`, `new_name` | Duplicate a node |
 
 ## Common TouchDesigner Node Types
 

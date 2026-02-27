@@ -1,6 +1,6 @@
 """
 TouchDesigner MCP Server
-Exposes 14 tools to control a running TouchDesigner instance.
+Exposes 19 tools to control a running TouchDesigner instance.
 Communicates with TouchDesigner via HTTP (Web Server DAT on port 9980)
 """
 
@@ -280,6 +280,113 @@ async def get_project_info() -> str:
     """Get information about the current TouchDesigner project including
     name, file path, resolution, FPS, and cook rate."""
     result = await send_to_td("get_project_info", {})
+    return json.dumps(result, indent=2)
+
+
+@mcp.tool()
+async def create_network(
+    nodes: list[dict],
+    connections: list[dict] | None = None,
+    parent_path: str = "/project1",
+) -> str:
+    """Create multiple nodes and connections in one call. This is the most
+    efficient way to build node chains and networks.
+
+    Args:
+        nodes: List of node definitions. Each is a dict with:
+            - type (str, required): Operator type, e.g. 'noiseTOP', 'levelTOP'
+            - name (str, required): Node name
+            - params (dict, optional): Parameter name→value pairs to set
+            - x (float, optional): Network X position
+            - y (float, optional): Network Y position
+        connections: List of connections. Each is a dict with:
+            - source (str, required): Name of the source node (from nodes list)
+            - target (str, required): Name of the target node (from nodes list)
+            - output_index (int, optional, default 0): Source output index
+            - input_index (int, optional, default 0): Target input index
+        parent_path: Container to create nodes in (default: /project1).
+    """
+    result = await send_to_td("create_network", {
+        "nodes": nodes,
+        "connections": connections or [],
+        "parent_path": parent_path,
+    })
+    return json.dumps(result, indent=2)
+
+
+@mcp.tool()
+async def export_network(
+    parent_path: str = "/project1",
+    recursive: bool = False,
+) -> str:
+    """Export a subnetwork as JSON, including all nodes, their parameters,
+    positions, and connections. The output format is compatible with
+    create_network for round-tripping.
+
+    Args:
+        parent_path: Container to export (default: /project1).
+        recursive: Whether to include nodes in sub-containers (default: False).
+    """
+    result = await send_to_td("export_network", {
+        "parent_path": parent_path,
+        "recursive": recursive,
+    })
+    return json.dumps(result, indent=2)
+
+
+@mcp.tool()
+async def save_project(file_path: str = "") -> str:
+    """Save the current TouchDesigner project.
+
+    Args:
+        file_path: Optional file path for 'Save As'. If empty, saves to the current file.
+    """
+    result = await send_to_td("save_project", {
+        "file_path": file_path,
+    })
+    return json.dumps(result, indent=2)
+
+
+@mcp.tool()
+async def get_errors(
+    parent_path: str = "/",
+    recursive: bool = True,
+    include_warnings: bool = True,
+) -> str:
+    """List all nodes with cooking errors and/or warnings. Useful for
+    debugging after building or modifying networks.
+
+    Args:
+        parent_path: Container to check (default: / for entire project).
+        recursive: Whether to check recursively (default: True).
+        include_warnings: Whether to include warnings in addition to errors (default: True).
+    """
+    result = await send_to_td("get_errors", {
+        "parent_path": parent_path,
+        "recursive": recursive,
+        "include_warnings": include_warnings,
+    })
+    return json.dumps(result, indent=2)
+
+
+@mcp.tool()
+async def copy_node(
+    node_path: str,
+    destination_path: str = "",
+    new_name: str = "",
+) -> str:
+    """Duplicate a node. Optionally copy to a different container and/or rename.
+
+    Args:
+        node_path: Full path to the node to copy.
+        destination_path: Container to copy into (default: same parent as source).
+        new_name: New name for the copy (default: TD auto-names it).
+    """
+    result = await send_to_td("copy_node", {
+        "node_path": node_path,
+        "destination_path": destination_path,
+        "new_name": new_name,
+    })
     return json.dumps(result, indent=2)
 
 
