@@ -61,6 +61,18 @@ Open Copilot Chat in VS Code (agent mode) and try these prompts:
 ### Set a parameter
 > "Set the seed parameter of /project1/myNoise to 42"
 
+### Connect two nodes
+> "Connect myNoise to null1"
+
+### Search for nodes
+> "Find all TOP nodes in the project"
+
+### Get node details
+> "Show me the info and parameters of /project1/myNoise"
+
+### Run a script
+> "Execute a script that prints all node types in /project1"
+
 ### Combine operations
 > "Create a constant TOP called bg, then set its color to red (colorr=1, colorg=0, colorb=0)"
 
@@ -69,8 +81,19 @@ Open Copilot Chat in VS Code (agent mode) and try these prompts:
 | Tool | Parameters | Description |
 |------|-----------|-------------|
 | `create_node` | `node_type`, `node_name`, `parent_path` | Create an operator node |
+| `delete_node` | `node_path` | Delete a node |
+| `connect_nodes` | `source_path`, `target_path`, `input_index`, `output_index` | Wire output→input |
+| `disconnect_nodes` | `target_path`, `input_index` | Remove a connection |
+| `get_node_info` | `node_path` | Full node details (type, connections, position) |
 | `list_nodes` | `parent_path` | List children of a container |
+| `get_parameter` | `node_path`, `param_name` | Read a parameter value |
 | `set_parameter` | `node_path`, `param_name`, `value` | Set a parameter on a node |
+| `list_parameters` | `node_path`, `filter_pattern` | List all params with values/types/ranges |
+| `rename_node` | `node_path`, `new_name` | Rename a node |
+| `search_nodes` | `pattern`, `parent_path`, `family`, `recursive` | Find nodes by name/type pattern |
+| `set_node_position` | `node_path`, `x`, `y` | Position a node in the network |
+| `execute_script` | `script`, `parent_path` | Run arbitrary Python inside TD |
+| `get_project_info` | *(none)* | Project metadata (name, FPS, cook rate) |
 
 ## Common TouchDesigner Node Types
 
