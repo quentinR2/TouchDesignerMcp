@@ -1,11 +1,11 @@
-# TouchDesigner MCP Server — PoC
+# TouchDesigner MCP Server
 
 Control TouchDesigner from AI assistants (GitHub Copilot) using the [Model Context Protocol](https://modelcontextprotocol.io/).
 
 ## Architecture
 
 ```
-Copilot (VS Code)  ←— stdio/MCP —→  server.py (FastMCP)  ←— HTTP —→  TouchDesigner (Web Server DAT)
+Copilot (VS Code)  ←— stdio/MCP —→  mcp_server/ (FastMCP)  ←— HTTP —→  TouchDesigner (Web Server DAT)
 ```
 
 ## Prerequisites
@@ -22,12 +22,17 @@ Copilot (VS Code)  ←— stdio/MCP —→  server.py (FastMCP)  ←— HTTP —
 cd C:\Users\UF434QRO\Documents\TouchDesigner
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
+pip install -e .
 ```
+
+> `pip install -e .` reads `pyproject.toml` and installs the package in editable mode, so code changes are picked up immediately without reinstalling.
 
 ### 2. Set up TouchDesigner
 
-1. Open your TouchDesigner project (or create a new one)
+> ⚠️ **Important**: Your `.toe` project file must be saved **inside this repository folder** (next to `td_bridge/`).  
+> The bridge script uses `project.folder` to locate `td_bridge/` — if the `.toe` is elsewhere, the import will fail.
+
+1. Save (or create) your TouchDesigner project inside `C:\Users\UF434QRO\Documents\TouchDesigner\`
 2. **Create a Web Server DAT**:
    - Right-click in the network editor → `Add Operator` → `DAT` → `Web Server`
 3. **Configure it**:
@@ -36,6 +41,7 @@ pip install -r requirements.txt
 4. **Paste the bridge script**:
    - Click the small arrow/icon on the Web Server DAT to open its **callbacks DAT**
    - Select all existing content and **replace it entirely** with the contents of `td_webserver_callbacks.py`
+   - The stub auto-loads `td_bridge/` handlers from your project folder — re-paste whenever you update handler code
 5. Done — TouchDesigner is now listening for commands on `http://localhost:9980`
 
 ### 3. Configure VS Code (GitHub Copilot)
@@ -147,6 +153,7 @@ Open Copilot Chat in VS Code (agent mode) and try these prompts:
 
 ### "Unknown action" error
 - Make sure you pasted the full `td_webserver_callbacks.py` into the callbacks DAT.
+- If you edited files in `td_bridge/`, re-paste `td_webserver_callbacks.py` to reload them (it calls `importlib.reload` on all handlers).
 
 ### "Node not found"
 - Check the path with `list_nodes` first.
@@ -160,10 +167,32 @@ Open Copilot Chat in VS Code (agent mode) and try these prompts:
 
 ```
 TouchDesigner/
-├── server.py                     # MCP server (runs outside TD)
-├── td_webserver_callbacks.py     # Bridge script (paste into TD)
-├── requirements.txt              # Python dependencies
-├── README.md                     # This file
+├── your_project.toe               # ← .toe file MUST live here (next to td_bridge/)
+├── mcp_server/                    # MCP server Python package (runs outside TD)
+│   ├── __init__.py                # Shared FastMCP instance
+│   ├── __main__.py                # Entry point: python -m mcp_server
+│   ├── config.py                  # TD_URL and port constants
+│   ├── client.py                  # send_to_td() async HTTP helper
+│   └── tools/
+│       ├── __init__.py            # Auto-registers all tools on import
+│       ├── nodes.py               # create_node, delete_node, rename_node, copy_node, get_node_info, list_nodes
+│       ├── parameters.py          # get_parameter, set_parameter, list_parameters
+│       ├── connections.py         # connect_nodes, disconnect_nodes
+│       ├── network.py             # create_network, export_network, search_nodes, set_node_position
+│       └── project.py             # save_project, get_project_info, get_errors, execute_script
+├── td_bridge/                     # TD bridge package (imported from inside TD)
+│   ├── __init__.py
+│   ├── router.py                  # Dispatch table + handle_request() entry point
+│   └── handlers/
+│       ├── __init__.py
+│       ├── nodes.py               # Node operation handlers
+│       ├── parameters.py          # Parameter operation handlers
+│       ├── connections.py         # Connection operation handlers
+│       ├── network.py             # Network-level operation handlers
+│       └── project.py             # Project-level operation handlers
+├── td_webserver_callbacks.py      # Thin stub: uses project.folder to import td_bridge, then delegates
+├── pyproject.toml                 # Python packaging (replaces requirements.txt)
+├── README.md                      # This file
 └── .vscode/
-    └── mcp.json                  # VS Code MCP config for Copilot
+    └── mcp.json                   # VS Code MCP config for Copilot
 ```

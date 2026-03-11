@@ -3,7 +3,7 @@
     "touchdesigner": {
       "type": "stdio",
       "command": "${workspaceFolder}\\.venv\\Scripts\\python.exe",
-      "args": ["${workspaceFolder}\\server.py"]
+      "args": ["-m", "mcp_server"]
     }
   }
 }
