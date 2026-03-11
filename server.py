@@ -335,6 +335,24 @@ async def export_network(
 
 
 @mcp.tool()
+async def save_comp(
+    comp_path: str,
+    file_path: str,
+) -> str:
+    """Save a component/container as a .tox file.
+
+    Args:
+        comp_path: Full path to the component, e.g. '/project1/myComp'.
+        file_path: Destination file path, e.g. 'C:/myproject/myComp.tox'.
+    """
+    result = await send_to_td("save_comp", {
+        "comp_path": comp_path,
+        "file_path": file_path,
+    })
+    return json.dumps(result, indent=2)
+
+
+@mcp.tool()
 async def save_project(file_path: str = "") -> str:
     """Save the current TouchDesigner project.
 

@@ -59,6 +59,7 @@ def onHTTPRequest(webServerDAT, request, response):
         "get_project_info": handle_get_project_info,
         "create_network": handle_create_network,
         "export_network": handle_export_network,
+        "save_comp": handle_save_comp,
         "save_project": handle_save_project,
         "get_errors": handle_get_errors,
         "copy_node": handle_copy_node,
@@ -691,6 +692,33 @@ def handle_export_network(params):
         "connections": connections,
         "node_count": len(nodes),
         "connection_count": len(connections),
+    }
+
+
+def handle_save_comp(params):
+    """Save a component as a .tox file."""
+    comp_path = params.get("comp_path", "")
+    file_path = params.get("file_path", "")
+
+    if not comp_path:
+        raise ValueError("comp_path is required")
+    if not file_path:
+        raise ValueError("file_path is required")
+
+    comp = op(comp_path)
+    if comp is None:
+        raise ValueError(f"Component not found: {comp_path}")
+
+    try:
+        comp.save(file_path)
+    except Exception as e:
+        raise ValueError(f"Failed to save component: {e}")
+
+    return {
+        "success": True,
+        "comp": comp_path,
+        "saved_to": file_path,
+        "message": f"Component '{comp_path}' saved to {file_path}",
     }
 
 
