@@ -43,6 +43,18 @@ for _mod in [
 ]:
     importlib.reload(_mod)
 
+# Inject TouchDesigner globals into handler modules
+for _mod in [
+    td_bridge.handlers.nodes,
+    td_bridge.handlers.parameters,
+    td_bridge.handlers.connections,
+    td_bridge.handlers.network,
+    td_bridge.handlers.project,
+]:
+    _mod.op = op
+    _mod.project = project
+    _mod.ui = ui
+
 from td_bridge.router import handle_request
 
 
