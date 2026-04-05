@@ -49,7 +49,7 @@ pip install -e .
 The `.vscode/mcp.json` file is already included. Just open this folder in VS Code:
 
 ```bash
-code C:\Users\UF434QRO\Documents\TouchDesigner
+code C:\path\to\repo\TouchDesigner
 ```
 
 Copilot will automatically detect the MCP server. You can verify in the Copilot chat by checking available tools.
