@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "touchdesigner": {
+      "command": "C:\\Users\\UF434QRO\\Documents\\TouchDesigner\\.venv\\Scripts\\python.exe",
+      "args": ["-m", "mcp_server"]
+    }
+  }
+}
