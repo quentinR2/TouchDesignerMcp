@@ -1,7 +1,6 @@
 {
-  "servers": {
+  "mcpServers": {
     "touchdesigner": {
-      "type": "stdio",
       "command": "uv",
       "args": ["run", "touchdesigner-mcp"]
     }

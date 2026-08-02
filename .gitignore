@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+
+# Virtual environments
+.venv/
+venv/
+
+# Editor
+.vscode/settings.json
+.idea/
+
+# TouchDesigner project files and artifacts
+*.toe
+*.toe.*
+Backup/
+CrashAutoSave*
+*.dmp
