@@ -1,6 +1,6 @@
 import json
-from mcp_server import mcp
-from mcp_server.client import send_to_td
+from touchdesigner_mcp import mcp
+from touchdesigner_mcp.client import send_to_td
 
 
 @mcp.tool()

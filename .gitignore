@@ -12,3 +12,10 @@ venv/
 # Editor
 .vscode/settings.json
 .idea/
+
+# TouchDesigner project files and artifacts
+*.toe
+*.toe.*
+Backup/
+CrashAutoSave*
+*.dmp

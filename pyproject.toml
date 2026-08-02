@@ -1,15 +1,46 @@
 [build-system]
-requires = ["setuptools>=42"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "td-mcp"
+name = "touchdesigner-mcp"
 version = "0.1.0"
+description = "MCP server for controlling TouchDesigner networks from Claude, Copilot, Cursor and other MCP clients via a Web Server DAT bridge"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Quentin Rousseau" }]
 requires-python = ">=3.10"
+keywords = ["touchdesigner", "mcp", "model-context-protocol", "llm", "creative-coding"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Other Audience",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Multimedia :: Graphics",
+    "Topic :: Artistic Software",
+]
 dependencies = [
-    "mcp[cli]<2",
-    "httpx",
+    "mcp[cli]>=1.2,<2",
+    "httpx>=0.27",
 ]
 
+[project.optional-dependencies]
+dev = [
+    "pytest>=8",
+    "anyio>=4",
+]
+
+[project.scripts]
+touchdesigner-mcp = "touchdesigner_mcp.__main__:main"
+
+[project.urls]
+Homepage = "https://github.com/quentinR2/TouchDesignerMcp"
+Issues = "https://github.com/quentinR2/TouchDesignerMcp/issues"
+
 [tool.setuptools.packages.find]
-include = ["mcp_server*"]
+include = ["touchdesigner_mcp*"]
