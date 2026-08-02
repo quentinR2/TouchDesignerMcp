@@ -171,6 +171,16 @@ The bridge executes commands sent to the Web Server DAT **without authentication
 - Does the DAT's port match your configured `TD_PORT` (default `9980`)?
 - Try opening `http://localhost:9980` in your browser — you should get a response.
 
+### "Failed to start server" on the Web Server DAT (Windows)
+
+If the DAT refuses to start even though nothing else uses the port, Windows may have **reserved the port range** (Hyper-V/WSL/Docker do this, and the ranges move around after reboots). Check with:
+
+```powershell
+netsh interface ipv4 show excludedportrange protocol=tcp
+```
+
+If `9980` falls inside one of the listed ranges, pick a port outside all of them, set it on the Web Server DAT, and point the MCP server at it (e.g. `"args": ["touchdesigner-mcp", "--port", "9090"]` or `TD_PORT=9090`).
+
 ### "Unknown action" error
 - Make sure you pasted the **entire** bridge script into the callbacks DAT.
 - Your bridge may be older than your touchdesigner-mcp version — re-paste the output of `uvx touchdesigner-mcp bridge`.
