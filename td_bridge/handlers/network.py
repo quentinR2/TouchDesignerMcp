@@ -43,11 +43,14 @@ def handle_create_network(params):
 
     # Phase 2: Wire connections
     created_connections = []
-    for conn in connections_spec:
+    for i, conn in enumerate(connections_spec):
         src_name = conn.get("source")
         tgt_name = conn.get("target")
         out_idx = conn.get("output_index", 0)
         in_idx = conn.get("input_index", 0)
+
+        if not (isinstance(src_name, str) and src_name and isinstance(tgt_name, str) and tgt_name):
+            return {"success": False, "error": f"Connection at index {i} requires non-empty string 'source' and 'target'. Got: {conn}", "created_nodes": created_nodes, "created_connections": created_connections}
 
         src_node = node_map.get(src_name) or (op(f"{parent_path}/{src_name}") if not src_name.startswith("/") else op(src_name))
         tgt_node = node_map.get(tgt_name) or (op(f"{parent_path}/{tgt_name}") if not tgt_name.startswith("/") else op(tgt_name))
