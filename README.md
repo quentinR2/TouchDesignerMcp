@@ -156,8 +156,14 @@ Prompts that work well in agent mode:
 | Table | `tableDAT` | DAT |
 | Circle | `circleSOP` | SOP |
 | Box | `boxSOP` | SOP |
-| Geometry | `geoCOMP` | COMP |
+| Geometry | `geometryCOMP` | COMP |
 | Container | `containerCOMP` | COMP |
+
+A few non-obvious TD behaviors when building networks programmatically:
+
+- The Geometry component's create-type is `geometryCOMP` (not `geoCOMP`), and it spawns with a default torus SOP inside.
+- A **CHOP to TOP** takes its source CHOP via its `chop` parameter, not an input wire — connecting to input 0 fails.
+- A **Feedback TOP** shows an error until an input is wired to initialize its buffer.
 
 ## Security note
 
