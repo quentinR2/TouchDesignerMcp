@@ -23,6 +23,8 @@ HEADER = '''\
 # TouchDesigner MCP Bridge — Web Server DAT callbacks (self-contained)
 # =============================================================================
 #
+# Bridge version: {version} — matches the touchdesigner-mcp package version.
+#
 # SETUP:
 # 1. In TouchDesigner, create a Web Server DAT
 #    (right-click network → Add Operator → DAT → Web Server)
@@ -39,6 +41,8 @@ HEADER = '''\
 # =============================================================================
 
 '''
+
+VERSION_CONSTANT = 'BRIDGE_VERSION = "{version}"  # touchdesigner-mcp release this bridge was generated from\n\n'
 
 # TouchDesigner injects its builtins (op, project, ui, ...) into every DAT's
 # execution namespace, so no import is needed inside TD. The guard below only
@@ -87,6 +91,15 @@ def onServerStop(webServerDAT):
 '''
 
 
+def read_version() -> str:
+    """Package version from pyproject.toml (regex keeps this runnable on 3.10, no tomllib)."""
+    text = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
+    match = re.search(r'^version\s*=\s*"([^"]+)"', text, re.MULTILINE)
+    if not match:
+        sys.exit("ERROR: could not find version in pyproject.toml")
+    return match.group(1)
+
+
 def split_source(text: str) -> tuple[list[str], str]:
     """Separate top-level import lines from the rest of a module's source."""
     imports, body = [], []
@@ -106,6 +119,7 @@ def top_level_names(body: str) -> set[str]:
 
 
 def main() -> None:
+    version = read_version()
     all_imports: list[str] = []
     sections: list[str] = []
     seen_names: set[str] = set()
@@ -138,7 +152,8 @@ def main() -> None:
         sections.append(f"# --- from td_bridge/{path.relative_to(ROOT / 'td_bridge').as_posix()} ---\n\n{body}")
 
     parts = [
-        HEADER,
+        HEADER.format(version=version),
+        VERSION_CONSTANT.format(version=version),
         "\n".join(all_imports) + "\n\n",
         TD_GUARD,
         "\n\n\n".join(sections) + "\n\n\n",
