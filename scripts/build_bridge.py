@@ -122,8 +122,6 @@ def main() -> None:
     version = read_version()
     all_imports: list[str] = []
     sections: list[str] = []
-    # Names this script injects itself are reserved — a handler defining one
-    # would silently shadow it in the merged file.
     seen_names: set[str] = {"BRIDGE_VERSION"}
 
     sources = [ROOT / "td_bridge" / "handlers" / f"{m}.py" for m in HANDLER_MODULES]

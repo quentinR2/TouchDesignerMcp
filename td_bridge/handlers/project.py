@@ -20,6 +20,7 @@ def handle_save_project(params):
 def handle_get_project_info(params):
     return {
         "success": True,
+        "bridge_version": globals().get("BRIDGE_VERSION"),
         "project": {
             "name": project.name,
             "folder": project.folder,
