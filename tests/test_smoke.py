@@ -59,5 +59,6 @@ def test_bridge_version_matches_pyproject():
     import touchdesigner_mcp.bridge_script as bridge
 
     pyproject = (Path(__file__).parent.parent / "pyproject.toml").read_text(encoding="utf-8")
-    version = re.search(r'^version\s*=\s*"([^"]+)"', pyproject, re.MULTILINE).group(1)
-    assert bridge.BRIDGE_VERSION == version
+    match = re.search(r'^version\s*=\s*"([^"]+)"', pyproject, re.MULTILINE)
+    assert match, "version key not found in pyproject.toml"
+    assert bridge.BRIDGE_VERSION == match.group(1)
