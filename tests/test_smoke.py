@@ -3,7 +3,9 @@
 Does not require TouchDesigner — only exercises the MCP layer.
 """
 
+import re
 import sys
+from pathlib import Path
 
 import anyio
 from mcp import ClientSession, StdioServerParameters
@@ -51,3 +53,12 @@ def test_bridge_script_importable():
     assert set(bridge.HANDLERS) == EXPECTED_TOOLS
     assert callable(bridge.handle_request)
     assert callable(bridge.onHTTPRequest)
+
+
+def test_bridge_version_matches_pyproject():
+    import touchdesigner_mcp.bridge_script as bridge
+
+    pyproject = (Path(__file__).parent.parent / "pyproject.toml").read_text(encoding="utf-8")
+    match = re.search(r'^version\s*=\s*"([^"]+)"', pyproject, re.MULTILINE)
+    assert match, "version key not found in pyproject.toml"
+    assert bridge.BRIDGE_VERSION == match.group(1)

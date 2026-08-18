@@ -2,6 +2,8 @@
 # TouchDesigner MCP Bridge — Web Server DAT callbacks (self-contained)
 # =============================================================================
 #
+# Bridge version: 0.1.0 — matches the touchdesigner-mcp package version.
+#
 # SETUP:
 # 1. In TouchDesigner, create a Web Server DAT
 #    (right-click network → Add Operator → DAT → Web Server)
@@ -16,6 +18,8 @@
 # Source of truth: td_bridge/ in https://github.com/quentinR2/TouchDesignerMcp
 # Regenerate with: python scripts/build_bridge.py
 # =============================================================================
+
+BRIDGE_VERSION = "0.1.0"  # touchdesigner-mcp release this bridge was generated from
 
 from fnmatch import fnmatch
 import io
