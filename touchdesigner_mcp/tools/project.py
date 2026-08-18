@@ -16,8 +16,8 @@ async def save_project(file_path: str = "") -> str:
 
 @mcp.tool()
 async def get_project_info() -> str:
-    """Get information about the current TouchDesigner project including
-    name, file path, FPS, and cook rate."""
+    """Get information about the current TouchDesigner project: name, folder,
+    save version, cook rate, real-time flag, and the bridge script version."""
     result = await send_to_td("get_project_info", {})
     return json.dumps(result, indent=2)
 
