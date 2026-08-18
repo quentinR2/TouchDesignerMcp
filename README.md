@@ -133,7 +133,7 @@ Prompts that work well in agent mode:
 | `search_nodes` | `pattern`, `parent_path`, `family`, `recursive` | Find nodes by name/type pattern |
 | `set_node_position` | `node_path`, `x`, `y` | Position a node in the network |
 | `save_project` | `file_path` (optional) | Save the .toe file |
-| `get_project_info` | *(none)* | Project metadata (name, FPS, cook rate, bridge version) |
+| `get_project_info` | *(none)* | Project metadata (name, folder, save version, cook rate, real-time flag, bridge version) |
 | `get_errors` | `parent_path`, `recursive`, `include_warnings` | List nodes with errors/warnings |
 | `execute_script` | `script`, `parent_path` | Run arbitrary Python inside TD |
 
