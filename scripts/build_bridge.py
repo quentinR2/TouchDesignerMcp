@@ -30,7 +30,10 @@ HEADER = '''\
 # TouchDesigner MCP Bridge — Web Server DAT callbacks (self-contained)
 # =============================================================================
 #
-# Bridge version: {version} — matches the touchdesigner-mcp package version.
+# Bridge version: {version}
+# Release downloads are stamped to match the touchdesigner-mcp package version;
+# 0.0.0.dev0 is the in-repo placeholder (grab a stamped copy from a GitHub
+# release, or `touchdesigner-mcp bridge` from an installed package).
 #
 # SETUP:
 # 1. In TouchDesigner, create a Web Server DAT
