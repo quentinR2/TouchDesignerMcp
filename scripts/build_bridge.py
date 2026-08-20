@@ -10,6 +10,7 @@ wheel (exposed via the `touchdesigner-mcp bridge` CLI subcommand). CI fails if
 it is stale.
 """
 
+import argparse
 import re
 import sys
 from pathlib import Path
@@ -17,6 +18,12 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 HANDLER_MODULES = ["nodes", "parameters", "connections", "network", "project"]
 OUTPUT = ROOT / "touchdesigner_mcp" / "bridge_script.py"
+
+# Stamp for the checked-in copy. Real versions come from git tags: the release
+# workflow regenerates the script with --version <tag> before building, so only
+# release artifacts carry a concrete version. Keeps the repo copy deterministic
+# (CI diffs it) with no version to bump anywhere.
+DEV_VERSION = "0.0.0.dev0"
 
 HEADER = '''\
 # =============================================================================
@@ -91,15 +98,6 @@ def onServerStop(webServerDAT):
 '''
 
 
-def read_version() -> str:
-    """Package version from pyproject.toml (regex keeps this runnable on 3.10, no tomllib)."""
-    text = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
-    match = re.search(r'^version\s*=\s*"([^"]+)"', text, re.MULTILINE)
-    if not match:
-        sys.exit("ERROR: could not find version in pyproject.toml")
-    return match.group(1)
-
-
 def split_source(text: str) -> tuple[list[str], str]:
     """Separate top-level import lines from the rest of a module's source."""
     imports, body = [], []
@@ -119,7 +117,21 @@ def top_level_names(body: str) -> set[str]:
 
 
 def main() -> None:
-    version = read_version()
+    parser = argparse.ArgumentParser(description="Generate the single-file TD bridge script.")
+    parser.add_argument(
+        "--version",
+        default=DEV_VERSION,
+        help=f"Version to stamp into the script (release builds pass the tag; default: {DEV_VERSION})",
+    )
+    parser.add_argument(
+        "--output",
+        type=Path,
+        default=OUTPUT,
+        help="Where to write the generated script (default: touchdesigner_mcp/bridge_script.py)",
+    )
+    args = parser.parse_args()
+
+    version = args.version
     all_imports: list[str] = []
     sections: list[str] = []
     seen_names: set[str] = {"BRIDGE_VERSION"}
@@ -159,8 +171,8 @@ def main() -> None:
         "\n\n\n".join(sections) + "\n\n\n",
         CALLBACKS,
     ]
-    OUTPUT.write_text("".join(parts), encoding="utf-8", newline="\n")
-    print(f"Wrote {OUTPUT.relative_to(ROOT)} ({OUTPUT.stat().st_size} bytes, {len(seen_names)} top-level names)")
+    args.output.write_text("".join(parts), encoding="utf-8", newline="\n")
+    print(f"Wrote {args.output} ({args.output.stat().st_size} bytes, {len(seen_names)} top-level names, version {version})")
 
 
 if __name__ == "__main__":

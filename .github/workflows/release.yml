@@ -12,12 +12,21 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Stamp version from tag
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          echo "SETUPTOOLS_SCM_PRETEND_VERSION=$VERSION" >> "$GITHUB_ENV"
+          python scripts/build_bridge.py --version "$VERSION"
       - name: Build distributions
         run: pipx run build
       - uses: actions/upload-artifact@v4
         with:
           name: dist
           path: dist/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bridge
+          path: touchdesigner_mcp/bridge_script.py
 
   publish-pypi:
     needs: build
@@ -43,10 +52,14 @@ jobs:
         with:
           name: dist
           path: dist/
+      - uses: actions/download-artifact@v4
+        with:
+          name: bridge
+          path: bridge/
       - name: Create GitHub release with bridge script asset
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          cp touchdesigner_mcp/bridge_script.py touchdesigner-mcp-bridge-callbacks.py
+          cp bridge/bridge_script.py touchdesigner-mcp-bridge-callbacks.py
           gh release create "${{ github.ref_name }}" dist/* touchdesigner-mcp-bridge-callbacks.py \
             --title "${{ github.ref_name }}" --generate-notes
