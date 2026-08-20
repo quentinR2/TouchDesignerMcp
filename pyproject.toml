@@ -1,10 +1,10 @@
 [build-system]
-requires = ["setuptools>=77"]
+requires = ["setuptools>=77", "setuptools-scm>=8"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "touchdesigner-mcp"
-version = "0.2.0"
+dynamic = ["version"]
 description = "MCP server for controlling TouchDesigner networks from Claude, Copilot, Cursor and other MCP clients via a Web Server DAT bridge"
 readme = "README.md"
 license = "MIT"
@@ -44,3 +44,7 @@ Issues = "https://github.com/quentinR2/TouchDesignerMcp/issues"
 
 [tool.setuptools.packages.find]
 include = ["touchdesigner_mcp*"]
+
+[tool.setuptools_scm]
+# Version comes from git tags (vX.Y.Z). Release builds pin it exactly via
+# SETUPTOOLS_SCM_PRETEND_VERSION in .github/workflows/release.yml.

@@ -2,7 +2,10 @@
 # TouchDesigner MCP Bridge — Web Server DAT callbacks (self-contained)
 # =============================================================================
 #
-# Bridge version: 0.2.0 — matches the touchdesigner-mcp package version.
+# Bridge version: 0.0.0.dev0
+# Release downloads are stamped to match the touchdesigner-mcp package version;
+# 0.0.0.dev0 is the in-repo placeholder (grab a stamped copy from a GitHub
+# release, or `touchdesigner-mcp bridge` from an installed package).
 #
 # SETUP:
 # 1. In TouchDesigner, create a Web Server DAT
@@ -19,7 +22,7 @@
 # Regenerate with: python scripts/build_bridge.py
 # =============================================================================
 
-BRIDGE_VERSION = "0.2.0"  # touchdesigner-mcp release this bridge was generated from
+BRIDGE_VERSION = "0.0.0.dev0"  # touchdesigner-mcp release this bridge was generated from
 
 from fnmatch import fnmatch
 import io

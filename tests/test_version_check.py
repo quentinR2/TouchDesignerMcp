@@ -36,6 +36,16 @@ def test_unknown_server_version_never_warns(monkeypatch):
     assert client.version_mismatch_warning(None) is None
 
 
+def test_dev_server_version_never_warns(monkeypatch):
+    monkeypatch.setattr(client, "SERVER_VERSION", "0.2.1.dev3+g1234abc")
+    assert client.version_mismatch_warning("0.1.0") is None
+    assert client.version_mismatch_warning(None) is None
+
+
+def test_dev_bridge_version_never_warns():
+    assert client.version_mismatch_warning("0.0.0.dev0") is None
+
+
 def _send_with_fake_bridge(monkeypatch, project_info_response, action="list_nodes"):
     """Run send_to_td against a fake bridge whose get_project_info returns the given JSON."""
 
