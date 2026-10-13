@@ -24,6 +24,11 @@ def version_mismatch_warning(bridge_version: str | None) -> str | None:
     """Warning string if the TD-side bridge doesn't match this server's version, else None."""
     if SERVER_VERSION is None or bridge_version == SERVER_VERSION:
         return None
+    # Dev builds (editable installs, repo-copied bridge scripts) carry
+    # setuptools-scm/placeholder versions like 0.2.1.dev3+g1234abc or 0.0.0.dev0
+    # — comparing those is meaningless, so stay quiet.
+    if ".dev" in SERVER_VERSION or (bridge_version is not None and ".dev" in bridge_version):
+        return None
     if bridge_version is None:
         return (
             f"TouchDesigner bridge version is unknown — it likely predates this server (v{SERVER_VERSION}). "

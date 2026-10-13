@@ -40,7 +40,7 @@ Module names mirror each other: `tools/nodes.py` ↔ `handlers/nodes.py`, and li
 
 ## Releasing
 
-Bump `version` in `pyproject.toml`, tag `vX.Y.Z`, push the tag. GitHub Actions publishes to PyPI (Trusted Publishing) and creates a GitHub release with the bridge script attached. The `.tox` asset is built in TouchDesigner and uploaded manually when the bridge changed.
+Tag `vX.Y.Z` and push the tag — nothing else. The version is derived from the git tag via setuptools-scm (`dynamic = ["version"]`; no version field in `pyproject.toml`). The release workflow pins it with `SETUPTOOLS_SCM_PRETEND_VERSION` and regenerates the bridge with `build_bridge.py --version <tag>`, so only release artifacts carry a real version — the checked-in `bridge_script.py` always says `0.0.0.dev0`, and the version-mismatch warning in `client.py` deliberately stays silent when either side is a `.dev` version. The `.tox` asset is built in TouchDesigner and uploaded manually when the bridge changed.
 
 ## TouchDesigner gotchas (when writing bridge/handler code)
 

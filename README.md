@@ -20,7 +20,7 @@ You need two things running: the **bridge inside TouchDesigner** and the **MCP s
    ```bash
    uvx touchdesigner-mcp bridge
    ```
-   (or copy [`touchdesigner_mcp/bridge_script.py`](touchdesigner_mcp/bridge_script.py) from this repo / the latest [release](../../releases))
+   (or grab `touchdesigner-mcp-bridge-callbacks.py` from the latest [release](../../releases) — avoid copying `bridge_script.py` from the repo, which carries a dev placeholder version)
 2. In TouchDesigner: right-click in the network editor → `Add Operator` → `DAT` → `Web Server`
 3. In the Web Server DAT parameters: set **Port** to `9980`, toggle **Active** ON
 4. Click the arrow icon on the Web Server DAT to open its **callbacks DAT**, and replace its entire contents with the copied script
@@ -235,7 +235,13 @@ python scripts/build_bridge.py
 
 CI fails if `touchdesigner_mcp/bridge_script.py` is stale. To test bridge changes in TD, re-paste the regenerated script into the callbacks DAT.
 
-**Releasing:** bump `version` in `pyproject.toml`, tag `vX.Y.Z`, push the tag. GitHub Actions builds, publishes to PyPI (Trusted Publishing), and creates a GitHub release with the bridge script attached. Build the `.tox` in TouchDesigner and upload it to the release manually when the bridge changed.
+**Releasing:** tag and push — that's all:
+
+```bash
+git tag v0.3.0 && git push origin v0.3.0
+```
+
+The version is derived from the tag (setuptools-scm; there is no version field to bump). GitHub Actions stamps it into the bridge script, builds, publishes to PyPI (Trusted Publishing), and creates a GitHub release with the stamped bridge script attached. The checked-in `bridge_script.py` always carries the `0.0.0.dev0` placeholder — only release artifacts get a real version. Build the `.tox` in TouchDesigner and upload it to the release manually when the bridge changed.
 
 ## License
 

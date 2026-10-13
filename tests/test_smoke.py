@@ -3,7 +3,7 @@
 Does not require TouchDesigner — only exercises the MCP layer.
 """
 
-import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -55,10 +55,22 @@ def test_bridge_script_importable():
     assert callable(bridge.onHTTPRequest)
 
 
-def test_bridge_version_matches_pyproject():
+def test_checked_in_bridge_has_dev_placeholder():
+    # Real versions are stamped by the release workflow from the git tag; the
+    # repo copy must stay on the deterministic placeholder or CI's staleness
+    # check would churn.
     import touchdesigner_mcp.bridge_script as bridge
 
-    pyproject = (Path(__file__).parent.parent / "pyproject.toml").read_text(encoding="utf-8")
-    match = re.search(r'^version\s*=\s*"([^"]+)"', pyproject, re.MULTILINE)
-    assert match, "version key not found in pyproject.toml"
-    assert bridge.BRIDGE_VERSION == match.group(1)
+    assert bridge.BRIDGE_VERSION == "0.0.0.dev0"
+
+
+def test_build_bridge_stamps_explicit_version(tmp_path):
+    out = tmp_path / "bridge.py"
+    root = Path(__file__).parent.parent
+    subprocess.run(
+        [sys.executable, str(root / "scripts" / "build_bridge.py"), "--version", "9.9.9", "--output", str(out)],
+        check=True,
+    )
+    text = out.read_text(encoding="utf-8")
+    assert 'BRIDGE_VERSION = "9.9.9"' in text
+    assert "# Bridge version: 9.9.9" in text
