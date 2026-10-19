@@ -44,8 +44,8 @@ def handle_get_errors(params):
 
     def check_node(container):
         for child in container.children:
-            errors = child.errors if hasattr(child, 'errors') else ""
-            warnings = child.warnings if hasattr(child, 'warnings') else ""
+            errors = child.errors() if hasattr(child, 'errors') else ""
+            warnings = child.warnings() if hasattr(child, 'warnings') else ""
             has_errors = bool(errors)
             has_warnings = bool(warnings) and include_warnings
 
