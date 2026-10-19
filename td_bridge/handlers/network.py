@@ -64,7 +64,7 @@ def handle_create_network(params):
             tgt_node.inputConnectors[in_idx].connect(src_node.outputConnectors[out_idx])
             created_connections.append({"source": src_node.path, "target": tgt_node.path, "output_index": out_idx, "input_index": in_idx})
         except Exception as e:
-            return {"success": False, "error": f"Failed to connect {src_name} → {tgt_name}: {e}", "created_nodes": created_nodes, "created_connections": created_connections}
+            return {"success": False, "error": f"Failed to connect {src_name} -> {tgt_name}: {e}", "created_nodes": created_nodes, "created_connections": created_connections}
 
     return {
         "success": True,

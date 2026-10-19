@@ -1,5 +1,5 @@
 # =============================================================================
-# TouchDesigner MCP Bridge — Web Server DAT callbacks (self-contained)
+# TouchDesigner MCP Bridge - Web Server DAT callbacks (self-contained)
 # =============================================================================
 #
 # Bridge version: 0.0.0.dev0
@@ -9,15 +9,15 @@
 #
 # SETUP:
 # 1. In TouchDesigner, create a Web Server DAT
-#    (right-click network → Add Operator → DAT → Web Server)
+#    (right-click network -> Add Operator -> DAT -> Web Server)
 # 2. In its parameters: set "Port" to 9980 (or your TD_PORT), turn "Active" ON
 # 3. Open its callbacks DAT (the small arrow icon on the Web Server DAT)
 # 4. Replace ALL contents of the callbacks DAT with this entire file
 #
-# That's it — the MCP server (`uvx touchdesigner-mcp`) can now control this
+# That's it - the MCP server (`uvx touchdesigner-mcp`) can now control this
 # project. Your .toe file can be saved anywhere; no disk dependencies.
 #
-# GENERATED FILE — DO NOT EDIT.
+# GENERATED FILE - DO NOT EDIT.
 # Source of truth: td_bridge/ in https://github.com/quentinR2/TouchDesignerMcp
 # Regenerate with: python scripts/build_bridge.py
 # =============================================================================
@@ -30,7 +30,7 @@ import sys
 import json
 
 try:
-    import td  # noqa: F401 — only exists inside TouchDesigner
+    import td  # noqa: F401 - only exists inside TouchDesigner
     op, project, ui = td.op, td.project, td.ui
 except ImportError:
     pass
@@ -101,7 +101,7 @@ def handle_rename_node(params):
         "old_name": old_name,
         "new_name": node.name,
         "new_path": node.path,
-        "message": f"Renamed '{old_name}' → '{node.name}'",
+        "message": f"Renamed '{old_name}' -> '{node.name}'",
     }
 
 
@@ -133,7 +133,7 @@ def handle_copy_node(params):
             "type": copied.type,
             "path": copied.path,
         },
-        "message": f"Copied {node_path} → {copied.path}",
+        "message": f"Copied {node_path} -> {copied.path}",
     }
 
 
@@ -324,7 +324,7 @@ def handle_connect_nodes(params):
         "target": target_path,
         "output_index": output_index,
         "input_index": input_index,
-        "message": f"Connected {source_path}[out:{output_index}] → {target_path}[in:{input_index}]",
+        "message": f"Connected {source_path}[out:{output_index}] -> {target_path}[in:{input_index}]",
     }
 
 
@@ -420,7 +420,7 @@ def handle_create_network(params):
             tgt_node.inputConnectors[in_idx].connect(src_node.outputConnectors[out_idx])
             created_connections.append({"source": src_node.path, "target": tgt_node.path, "output_index": out_idx, "input_index": in_idx})
         except Exception as e:
-            return {"success": False, "error": f"Failed to connect {src_name} → {tgt_name}: {e}", "created_nodes": created_nodes, "created_connections": created_connections}
+            return {"success": False, "error": f"Failed to connect {src_name} -> {tgt_name}: {e}", "created_nodes": created_nodes, "created_connections": created_connections}
 
     return {
         "success": True,

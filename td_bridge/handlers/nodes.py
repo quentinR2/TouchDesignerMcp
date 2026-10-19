@@ -62,7 +62,7 @@ def handle_rename_node(params):
         "old_name": old_name,
         "new_name": node.name,
         "new_path": node.path,
-        "message": f"Renamed '{old_name}' → '{node.name}'",
+        "message": f"Renamed '{old_name}' -> '{node.name}'",
     }
 
 
@@ -94,7 +94,7 @@ def handle_copy_node(params):
             "type": copied.type,
             "path": copied.path,
         },
-        "message": f"Copied {node_path} → {copied.path}",
+        "message": f"Copied {node_path} -> {copied.path}",
     }
 
 

@@ -1,5 +1,6 @@
 import argparse
 import importlib.resources
+import sys
 
 from touchdesigner_mcp import config, mcp
 import touchdesigner_mcp.tools  # noqa: F401 — imports all tool modules, registering @mcp.tool() decorators
@@ -22,7 +23,12 @@ def main():
 
     if args.command == "bridge":
         script = importlib.resources.files("touchdesigner_mcp").joinpath("bridge_script.py").read_text(encoding="utf-8")
-        print(script)
+        # The script is pasted into a DAT or redirected to a file: always emit UTF-8
+        # bytes instead of re-encoding with the console codec (cp1252 consoles crash on
+        # anything non-ASCII — issue #13).
+        sys.stdout.flush()
+        sys.stdout.buffer.write(script.encode("utf-8"))
+        sys.stdout.buffer.flush()
         return
 
     # Precedence: --url > --host/--port > TD_URL > TD_HOST/TD_PORT > defaults

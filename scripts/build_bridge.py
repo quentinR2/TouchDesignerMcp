@@ -1,4 +1,4 @@
-"""Generate touchdesigner_mcp/bridge_script.py — the single-file Web Server DAT callbacks script.
+"""Generate touchdesigner_mcp/bridge_script.py - the single-file Web Server DAT callbacks script.
 
 Merges td_bridge/handlers/*.py and td_bridge/router.py into one self-contained
 file that users paste into a Web Server DAT's callbacks DAT. Run from anywhere:
@@ -27,7 +27,7 @@ DEV_VERSION = "0.0.0.dev0"
 
 HEADER = '''\
 # =============================================================================
-# TouchDesigner MCP Bridge — Web Server DAT callbacks (self-contained)
+# TouchDesigner MCP Bridge - Web Server DAT callbacks (self-contained)
 # =============================================================================
 #
 # Bridge version: {version}
@@ -37,15 +37,15 @@ HEADER = '''\
 #
 # SETUP:
 # 1. In TouchDesigner, create a Web Server DAT
-#    (right-click network → Add Operator → DAT → Web Server)
+#    (right-click network -> Add Operator -> DAT -> Web Server)
 # 2. In its parameters: set "Port" to 9980 (or your TD_PORT), turn "Active" ON
 # 3. Open its callbacks DAT (the small arrow icon on the Web Server DAT)
 # 4. Replace ALL contents of the callbacks DAT with this entire file
 #
-# That's it — the MCP server (`uvx touchdesigner-mcp`) can now control this
+# That's it - the MCP server (`uvx touchdesigner-mcp`) can now control this
 # project. Your .toe file can be saved anywhere; no disk dependencies.
 #
-# GENERATED FILE — DO NOT EDIT.
+# GENERATED FILE - DO NOT EDIT.
 # Source of truth: td_bridge/ in https://github.com/quentinR2/TouchDesignerMcp
 # Regenerate with: python scripts/build_bridge.py
 # =============================================================================
@@ -59,7 +59,7 @@ VERSION_CONSTANT = 'BRIDGE_VERSION = "{version}"  # touchdesigner-mcp release th
 # keeps this file importable outside TD (linting, packaging, tests).
 TD_GUARD = '''\
 try:
-    import td  # noqa: F401 — only exists inside TouchDesigner
+    import td  # noqa: F401 - only exists inside TouchDesigner
     op, project, ui = td.op, td.project, td.ui
 except ImportError:
     pass
@@ -151,7 +151,7 @@ def main() -> None:
                 all_imports.append(imp)
 
         if path.name == "router.py":
-            # Handlers become same-module functions: nodes.handle_x → handle_x
+            # Handlers become same-module functions: nodes.handle_x -> handle_x
             body = re.sub(
                 r"\b(?:%s)\.(handle_\w+)" % "|".join(HANDLER_MODULES),
                 r"\1",
@@ -174,7 +174,12 @@ def main() -> None:
         "\n\n\n".join(sections) + "\n\n\n",
         CALLBACKS,
     ]
-    args.output.write_text("".join(parts), encoding="utf-8", newline="\n")
+    text = "".join(parts)
+    non_ascii = sorted({c for c in text if ord(c) > 127})
+    if non_ascii:
+        # The script travels through arbitrary consoles and clipboards (issue #13).
+        sys.exit(f"ERROR: generated bridge must be pure ASCII; found {ascii(non_ascii)} in td_bridge/ sources")
+    args.output.write_text(text, encoding="utf-8", newline="\n")
     print(f"Wrote {args.output} ({args.output.stat().st_size} bytes, {len(seen_names)} top-level names, version {version})")
 
 

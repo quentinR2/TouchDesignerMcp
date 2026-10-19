@@ -28,7 +28,7 @@ def handle_connect_nodes(params):
         "target": target_path,
         "output_index": output_index,
         "input_index": input_index,
-        "message": f"Connected {source_path}[out:{output_index}] → {target_path}[in:{input_index}]",
+        "message": f"Connected {source_path}[out:{output_index}] -> {target_path}[in:{input_index}]",
     }
 
 
